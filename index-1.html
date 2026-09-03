@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jogo dos Amigos</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff;text-align:center}
+.wrap{max-width:700px;margin:auto;padding:22px}.card{background:#222;border-radius:18px;padding:22px;margin:14px 0}
+button,input{font-size:18px;padding:14px;border:0;border-radius:12px;margin:6px}
+button{background:#287cff;color:white;font-weight:bold}input{width:90%;max-width:330px}
+#game{display:none}.points{font-size:42px;font-weight:bold;margin:18px}.click{width:90%;height:150px;background:#00c853;font-size:30px}
+.small{color:#bbb}.player{padding:8px;background:#333;border-radius:9px;margin:5px}
+#roomCode{font-size:30px;letter-spacing:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎮 Jogo dos Amigos</h1>
+<div id="menu">
+  <div class="card">
+    <h2>👥 Criar sala</h2>
+    <input id="nameHost" placeholder="Seu nome" maxlength="16">
+    <br><button onclick="createRoom()">Criar sala</button>
+    <p class="small">Você será o dono da sala.</p>
+  </div>
+  <div class="card">
+    <h2>🔗 Entrar na sala</h2>
+    <input id="nameJoin" placeholder="Seu nome" maxlength="16">
+    <input id="roomInput" placeholder="Código da sala" maxlength="8">
+    <br><button onclick="joinRoom()">Entrar</button>
+  </div>
+  <p id="status" class="small"></p>
+</div>
+
+<div id="game">
+  <div class="card">
+    <h2>🔗 Código da sala</h2>
+    <div id="roomCode">----</div>
+    <p class="small">Copie o código inteiro e mande para seus amigos.</p>
+  </div>
+  <div class="card">
+    <h2>🏆 Pontos</h2>
+    <div id="scoreboard"></div>
+    <button class="click" onclick="clickGame()">CLICAR! 👆</button>
+    <p id="myPoints" class="points">0</p>
+  </div>
+  <div class="card">
+    <h2>🤖 IA</h2>
+    <p id="aiText">A IA vai entrar na próxima versão.</p>
+  </div>
+</div>
+</div>
+
+<script>
+let peer, conn, isHost=false, roomId="", myId="", myName="", players={};
+
+function setStatus(t){document.getElementById("status").textContent=t}
+
+function createRoom(){
+  myName=(document.getElementById("nameHost").value||"Jogador").trim();
+  isHost=true;
+  peer=new Peer();
+  peer.on("open", id=>{
+    myId=id; roomId=id.slice(-6).toUpperCase();
+    players[id]={name:myName,points:0};
+    document.getElementById("roomCode").textContent=id;
+    roomId=id;
+    showGame(); render();
+  });
+  peer.on("connection", c=>{
+    if(Object.keys(players).length>=10){c.on("open",()=>c.send({type:"full"}));return}
+    c.on("open",()=>{
+      c.on("data",msg=>hostMessage(c,msg));
+      c.on("close",()=>{delete players[c.peer]; broadcast(); render()});
+      c.send({type:"state",players,roomId});
+    });
+  });
+  peer.on("error",e=>setStatus("Erro: "+e.type));
+}
+
+function joinRoom(){
+  myName=(document.getElementById("nameJoin").value||"Jogador").trim();
+  const code=(document.getElementById("roomInput").value||"").trim();
+  if(!code){setStatus("Digite o código da sala.");return}
+  peer=new Peer();
+  peer.on("open",id=>{
+    myId=id;
+    conn=peer.connect(code,{reliable:true});
+    conn.on("open",()=>{
+      conn.send({type:"join",name:myName});
+      showGame();
+      document.getElementById("roomCode").textContent=code;
+    });
+    conn.on("data",msg=>{
+      if(msg.type==="state"){
+        players=msg.players;
+        roomId=msg.roomId;
+        render();
+      }
+      if(msg.type==="full") setStatus("Essa sala já está cheia.");
+    });
+    conn.on("close",()=>alert("A conexão com o dono da sala foi encerrada."));
+  });
+}
+
+function hostMessage(c,msg){
+  if(msg.type==="join"){
+    players[c.peer]={name:msg.name,points:0};
+    broadcast(); render();
+  }
+  if(msg.type==="click"){
+    if(players[c.peer]) players[c.peer].points++;
+    broadcast(); render();
+  }
+}
+
+function broadcast(){
+  peer.connections && Object.values(peer.connections).flat().forEach(c=>{
+    if(c.open)c.send({type:"state",players,roomId});
+  });
+}
+
+function clickGame(){
+  if(isHost){
+    players[myId].points++;
+    broadcast();render();
+  } else if(conn && conn.open) conn.send({type:"click"});
+}
+
+function showGame(){document.getElementById("menu").style.display="none";document.getElementById("game").style.display="block"}
+
+function render(){
+  const list=Object.values(players).sort((a,b)=>b.points-a.points);
+  document.getElementById("scoreboard").innerHTML=list.map((p,i)=>
+    `<div class="player">${i+1}º ${escapeHtml(p.name)} — ${p.points} ponto(s)</div>`).join("");
+  const me=players[myId]; if(me)document.getElementById("myPoints").textContent=me.points;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+</script>
+</body>
+</html>
