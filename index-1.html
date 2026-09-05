@@ -298,4 +298,422 @@ carregarVideosProntos();
 let peer;  
 function setStatus(txt) { document.getElementById('status').innerText = txt; }  
 </script>  </body>  
-</html>
+</html>// ===============================
+// 🎮 MULTIPLAYER - JOGO DOS AMIGOS
+// ===============================
+
+let peer = null;
+let conexao = null;
+let souHost = false;
+let meuNome = "";
+let meuPontos = 0;
+let pontosRival = 0;
+let tempoRestante = 30;
+let intervalo = null;
+let jogoComecou = false;
+
+function setStatus(txt) {
+  document.getElementById('status').innerText = txt;
+}
+
+function gerarCodigo() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// ===============================
+// 🏠 CRIAR SALA
+// ===============================
+
+function createRoom() {
+
+  meuNome = document.getElementById('nameHost').value.trim();
+
+  if (!meuNome) {
+    setStatus("Digite seu nome primeiro!");
+    return;
+  }
+
+  souHost = true;
+  meuPontos = 0;
+  pontosRival = 0;
+
+  const codigo = gerarCodigo();
+
+  setStatus("Criando sala...");
+
+  peer = new Peer(codigo);
+
+  peer.on('open', function(id) {
+
+    document.getElementById('displayRoomId').innerText = id;
+
+    document.getElementById('jogosMenu').style.display = 'none';
+    document.getElementById('criarSala').style.display = 'none';
+    document.getElementById('entrarSala').style.display = 'none';
+    document.getElementById('gamePlay').style.display = 'block';
+
+    atualizarPlacar();
+
+    setStatus("Sala criada! Mande o código para seu amigo.");
+
+  });
+
+  peer.on('connection', function(conn) {
+
+    conexao = conn;
+
+    conexao.on('open', function() {
+
+      conexao.send({
+        type: "nome",
+        nome: meuNome
+      });
+
+      setStatus("🎮 Amigo entrou! Começando o jogo...");
+
+      iniciarJogo();
+
+    });
+
+    receberDados();
+  });
+
+  peer.on('error', function(err) {
+    console.log(err);
+    setStatus("Erro ao criar a sala.");
+  });
+}
+
+
+// ===============================
+// 🔗 ENTRAR NA SALA
+// ===============================
+
+function joinRoom() {
+
+  meuNome = document.getElementById('nameJoin').value.trim();
+
+  const codigo = document.getElementById('roomInput').value.trim().toUpperCase();
+
+  if (!meuNome) {
+    setStatus("Digite seu nome primeiro!");
+    return;
+  }
+
+  if (!codigo) {
+    setStatus("Digite o código da sala!");
+    return;
+  }
+
+  souHost = false;
+
+  setStatus("Entrando na sala...");
+
+  peer = new Peer();
+
+  peer.on('open', function() {
+
+    conexao = peer.connect(codigo);
+
+    conexao.on('open', function() {
+
+      document.getElementById('displayRoomId').innerText = codigo;
+
+      document.getElementById('jogosMenu').style.display = 'none';
+      document.getElementById('criarSala').style.display = 'none';
+      document.getElementById('entrarSala').style.display = 'none';
+      document.getElementById('gamePlay').style.display = 'block';
+
+      conexao.send({
+        type: "nome",
+        nome: meuNome
+      });
+
+      atualizarPlacar();
+
+      setStatus("Conectado! Aguardando o início...");
+    });
+
+    receberDados();
+  });
+
+  peer.on('error', function(err) {
+    console.log(err);
+    setStatus("Não foi possível entrar na sala.");
+  });
+}
+
+
+// ===============================
+// 📡 RECEBER DADOS
+// ===============================
+
+function receberDados() {
+
+  if (!conexao) return;
+
+  conexao.on('data', function(data) {
+
+    if (data.type === "nome") {
+
+      pontosRival = 0;
+
+      const lista = document.getElementById('playersList');
+
+      lista.innerHTML =
+        `<div class="player">👤 ${meuNome}: <strong id="meuPlacar">0</strong></div>
+         <div class="player">👤 ${data.nome}: <strong id="rivalPlacar">0</strong></div>`;
+
+    }
+
+    if (data.type === "inicio") {
+
+      tempoRestante = data.tempo;
+      jogoComecou = true;
+
+      iniciarContagem();
+
+      setStatus("🔥 VALENDO!");
+
+    }
+
+    if (data.type === "ponto") {
+
+      pontosRival = data.pontos;
+
+      atualizarPlacar();
+    }
+
+    if (data.type === "fim") {
+
+      finalizarJogo(data);
+
+    }
+
+    if (data.type === "reiniciar") {
+
+      meuPontos = 0;
+      pontosRival = 0;
+      tempoRestante = 30;
+
+      atualizarPlacar();
+
+      iniciarContagem();
+
+    }
+
+  });
+}
+
+
+// ===============================
+// ⏱️ INICIAR JOGO
+// ===============================
+
+function iniciarJogo() {
+
+  if (!souHost) return;
+
+  meuPontos = 0;
+  pontosRival = 0;
+  tempoRestante = 30;
+
+  jogoComecou = true;
+
+  if (conexao) {
+
+    conexao.send({
+      type: "inicio",
+      tempo: 30
+    });
+
+  }
+
+  iniciarContagem();
+  atualizarPlacar();
+}
+
+
+// ===============================
+// ⏰ CONTAGEM REGRESSIVA
+// ===============================
+
+function iniciarContagem() {
+
+  clearInterval(intervalo);
+
+  tempoRestante = 30;
+
+  setStatus("⏱️ Tempo: 30 segundos");
+
+  intervalo = setInterval(function() {
+
+    tempoRestante--;
+
+    setStatus("⏱️ Tempo: " + tempoRestante + " segundos");
+
+    if (tempoRestante <= 0) {
+
+      clearInterval(intervalo);
+
+      jogoComecou = false;
+
+      terminarJogo();
+
+    }
+
+  }, 1000);
+}
+
+
+// ===============================
+// 👆 MARCAR PONTO
+// ===============================
+
+function marcarPonto() {
+
+  if (!jogoComecou) {
+    setStatus("⏳ O jogo ainda não começou!");
+    return;
+  }
+
+  meuPontos++;
+
+  atualizarPlacar();
+
+  if (conexao) {
+
+    conexao.send({
+      type: "ponto",
+      pontos: meuPontos
+    });
+
+  }
+}
+
+
+// ===============================
+// 📊 ATUALIZAR PLACAR
+// ===============================
+
+function atualizarPlacar() {
+
+  document.getElementById('scoreDisplay').innerText = meuPontos;
+
+  const meu = document.getElementById('meuPlacar');
+  const rival = document.getElementById('rivalPlacar');
+
+  if (meu) meu.innerText = meuPontos;
+  if (rival) rival.innerText = pontosRival;
+}
+
+
+// ===============================
+// 🏁 TERMINAR JOGO
+// ===============================
+
+function terminarJogo() {
+
+  jogoComecou = false;
+
+  if (conexao) {
+
+    conexao.send({
+      type: "fim",
+      meuScore: meuPontos
+    });
+
+  }
+
+  mostrarResultado();
+}
+
+
+// ===============================
+// 🏆 RESULTADO
+// ===============================
+
+function finalizarJogo(data) {
+
+  clearInterval(intervalo);
+
+  pontosRival = data.meuScore;
+
+  jogoComecou = false;
+
+  atualizarPlacar();
+
+  mostrarResultado();
+}
+
+
+function mostrarResultado() {
+
+  let resultado = "";
+
+  if (meuPontos > pontosRival) {
+
+    resultado = "🏆 VOCÊ VENCEU!";
+
+  } else if (meuPontos < pontosRival) {
+
+    resultado = "😅 SEU AMIGO VENCEU!";
+
+  } else {
+
+    resultado = "🤝 DEU EMPATE!";
+
+  }
+
+  setStatus(
+    resultado +
+    " | Você: " +
+    meuPontos +
+    " x " +
+    pontosRival
+  );
+
+  criarBotaoRevanche();
+}
+
+
+// ===============================
+// 🔄 JOGAR NOVAMENTE
+// ===============================
+
+function criarBotaoRevanche() {
+
+  if (document.getElementById('revancheBtn')) return;
+
+  const botao = document.createElement('button');
+
+  botao.id = "revancheBtn";
+  botao.className = "mainBtn";
+  botao.innerText = "🔄 Jogar novamente";
+
+  botao.onclick = function() {
+
+    botao.remove();
+
+    meuPontos = 0;
+    pontosRival = 0;
+
+    atualizarPlacar();
+
+    if (souHost) {
+
+      iniciarJogo();
+
+    } else {
+
+      setStatus("⏳ Aguardando o dono da sala...");
+
+    }
+
+  };
+
+  document
+    .getElementById('gamePlay')
+    .querySelector('.card')
+    .appendChild(botao);
+}
