@@ -1,719 +1,119 @@
-<!DOCTYPE html>  <html lang="pt-BR">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>Vídeos Legais</title>  
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>  <style>  
-*{box-sizing:border-box}  
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vídeos Legais</title>
+<style>
+*{box-sizing:border-box}html,body{width:100%;max-width:100%;overflow-x:hidden}body{margin:0;font-family:Arial,sans-serif;background:#151515;color:#fff;font-size:14px}header{background:#ff7800;padding:10px;text-align:center;font-size:22px;font-weight:bold}header span{color:#6d00ff}nav{display:flex;gap:5px;padding:6px;background:#222}nav button{flex:1;padding:9px 2px;border:0;border-radius:9px;background:#333;color:#fff;font-size:12px;font-weight:bold}nav button.ativo{background:#ff7800}section{display:none;padding:10px}.card{background:#242424;border-radius:12px;padding:12px;margin-bottom:10px}.btn{width:100%;padding:10px;margin:5px 0;border:0;border-radius:9px;background:#ff7800;color:#fff;font-size:14px;font-weight:bold}.dark{background:#444}.video{background:#303030;padding:7px;border-radius:10px;margin:10px 0}.video video{display:block;width:100%;height:auto;min-height:130px;background:#000;border-radius:8px}.video p{font-size:14px}.link{display:block;text-align:center;background:#555;color:#fff;text-decoration:none;padding:8px;border-radius:8px;margin-top:6px}.aviso{background:#3a2c00;padding:9px;border-radius:8px;color:#ffd76a;line-height:1.3}.game{display:none}input{width:100%;padding:10px;margin:4px 0;border:0;border-radius:8px;font-size:14px}.status{background:#333;padding:9px;border-radius:8px;text-align:center}.score{text-align:center;font-size:38px;font-weight:bold}.click{width:100%;padding:18px;background:#7000ff;color:#fff;border:0;border-radius:12px;font-size:20px;font-weight:bold}.player{background:#333;padding:7px;border-radius:7px;margin:4px 0}.canal{display:flex;align-items:center;gap:10px;background:#242424;border-radius:12px;padding:10px;margin-bottom:10px}.avatar{width:48px;height:48px;border-radius:50%;background:#ff7800;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold}.canalInfo{flex:1}.canalInfo b{display:block;font-size:16px}.canalInfo small{color:#bbb}.inscrever{width:auto;margin:0;padding:9px 12px}.acoes{display:flex;gap:7px;margin-top:7px}.likeBtn{flex:1;padding:8px;border:0;border-radius:8px;background:#444;color:#fff;font-weight:bold}.likeBtn.liked{background:#ff7800}.likeCount{font-size:12px;color:#bbb;text-align:center;margin-top:4px}#inicio{display:block}
+
+.perfilTela{position:fixed;inset:0;background:#151515;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.perfilBox{width:min(430px,100%);background:#242424;border-radius:18px;padding:20px;text-align:center;box-shadow:0 8px 30px #0008}.perfilBox h1{margin:5px 0 8px}.perfilBox p{color:#ddd;line-height:1.4}.perfilBox input{width:100%;padding:12px;margin:6px 0;border:0;border-radius:9px;font-size:15px;background:#333;color:#fff}.perfilBox .btn{margin-top:10px}.perfilAvatar{width:72px;height:72px;border-radius:50%;background:#ff7800;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:30px;font-weight:bold}
+</style>
+</head>
+<body>
+<header>▶ <span>Vídeos Legais</span></header>
+<div id="perfilTela" class="perfilTela">
+  <div class="perfilBox">
+    <div class="perfilAvatar">▶</div>
+    <h1>👋 Bem-vindo ao Vídeos Legais!</h1>
+    <p>Antes de começar, vamos criar seu perfil. Escolha o nome que vai aparecer no seu canal.</p>
+    <input id="nomeUsuario" maxlength="30" placeholder="Seu nome (ex.: Haun)">
+    <input id="nomeCanal" maxlength="30" placeholder="Nome do canal (ex.: Canal do Haun)">
+    <button class="btn" id="salvarPerfilBtn">🚀 Começar</button>
+    <div id="perfilAviso" class="status"></div>
+  </div>
+</div>
+
+<nav>
+<button id="inicioBtn" class="ativo">🏠 Início</button>
+<button id="videosBtn">😂 Vídeos</button>
+<button id="jogosBtn">🎮 Jogos</button>
+<button id="canalBtn">📺 Canal</button>
+</nav>
+<section id="inicio">
+<div class="card"><h1>😂 Bem-vindo, <span id="inicioNome">amigo</span>!</h1><p>Seu canal <b id="inicioCanal">Meu Canal</b> está pronto. Poste vídeos e eles aparecerão no seu canal.</p><button class="btn" id="irVideos">😂 Ver vídeos</button><button class="btn" id="irJogos">🎮 Jogar</button></div>
+</section>
+<section id="videos">
+<div class="card">
+<h2>😂 Vídeos engraçados</h2>
+<div class="canal">
+<div class="avatar">▶</div>
+<div class="canalInfo"><b>Vídeos Legais</b><small id="inscritosTexto">0 inscritos</small></div>
+<button class="btn inscrever" id="inscreverBtn">🔔 Inscrever-se</button>
+</div>
+<div class="aviso">Se o vídeo ficar em 0:00 no Preview do Acode, toque em “Abrir vídeo” logo abaixo dele. O Acode/Android pode bloquear alguns vídeos remotos dentro do Preview.</div>
+
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/The_Boat_(1921).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🚤😂 The Boat (1921)</p><div class="acoes"><button class="likeBtn" data-like="boat">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:The_Boat_(1921).webm" target="_blank">▶ Abrir vídeo</a></div>
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/The_Paleface_(1922).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🤠😂 The Paleface (1922)</p><div class="acoes"><button class="likeBtn" data-like="paleface">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:The_Paleface_(1922).webm" target="_blank">▶ Abrir vídeo</a></div>
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/The_High_Sign_(1921).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🎯😂 The High Sign (1921)</p><div class="acoes"><button class="likeBtn" data-like="highsign">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:The_High_Sign_(1921).webm" target="_blank">▶ Abrir vídeo</a></div>
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Hard_Luck_(1921).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🍀😂 Hard Luck (1921)</p><div class="acoes"><button class="likeBtn" data-like="hardluck">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:Hard_Luck_(1921).webm" target="_blank">▶ Abrir vídeo</a></div>
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Number,_Please_(1920).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🔢😂 Number, Please (1920)</p><div class="acoes"><button class="likeBtn" data-like="numberplease">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:Number,_Please_(1920).webm" target="_blank">▶ Abrir vídeo</a></div>
+<div class="video"><video controls playsinline preload="metadata"><source src="https://commons.wikimedia.org/wiki/Special:Redirect/file/The_Scarecrow_(1920).webm" type="video/webm">Seu navegador não conseguiu carregar o vídeo.</video><p>🌾😂 The Scarecrow (1920)</p><div class="acoes"><button class="likeBtn" data-like="scarecrow">👍 Curtir <span>0</span></button></div><a class="link" href="https://commons.wikimedia.org/wiki/File:The_Scarecrow_(1920).webm" target="_blank">▶ Abrir vídeo</a></div>
+
+<h3>📤 Postar seu vídeo</h3>
+<p>Escolha um vídeo e ele ficará salvo neste navegador para aparecer novamente quando você abrir o app.</p>
+<input id="tituloVideo" type="text" maxlength="60" placeholder="Título do vídeo">
+<input id="arquivo" type="file" accept="video/*">
+<button class="btn" id="postarBtn">📤 Postar vídeo</button>
+<div id="statusPost" class="status">Nenhum vídeo novo postado.</div>
+<h3>⭐ Seus vídeos postados</h3>
+<div id="meuVideo"></div>
+<button class="btn dark" id="voltarInicio">⬅️ Voltar</button>
+</div></section>
+
+<section id="canal">
+<div class="card">
+<h2>📺 Meu Canal</h2>
+<div class="canal">
+<div class="avatar" id="meuAvatar">▶</div>
+<div class="canalInfo"><b id="meuCanalNome">Meu Canal</b><small id="canalInscritos">0 inscritos • seus vídeos</small></div>
+</div>
+<p>Aqui aparecem todos os vídeos que você postar.</p><p>👤 Criador: <b id="criadorNome">Você</b></p>
+<div id="videosDoCanal"></div>
+<button class="btn dark" id="voltarVideos">⬅️ Voltar aos vídeos</button>
+</div>
+</section>
+<section id="jogos">
+<div id="menuJogo" class="card"><h2>🎮 Jogo dos Amigos</h2><p>Teste local do jogo de cliques.</p><button class="btn" id="criarBtn">🏠 Criar sala</button><button class="btn" id="entrarBtn">🔑 Entrar em sala</button></div>
+<div id="criar" class="game card"><h2>🏠 Criar sala</h2><input id="nomeHost" placeholder="Seu nome"><button class="btn" id="criarSalaBtn">🚀 Criar</button><div id="hostStatus" class="status">Pronto.</div><button class="btn dark" id="voltarJogo1">⬅️ Voltar</button></div>
+<div id="entrar" class="game card"><h2>🔑 Entrar</h2><input id="nomeJoin" placeholder="Seu nome"><input id="codigo" placeholder="Código da sala"><button class="btn" id="entrarSalaBtn">🎮 Entrar</button><div id="joinStatus" class="status">Digite o código.</div><button class="btn dark" id="voltarJogo2">⬅️ Voltar</button></div>
+<div id="partida" class="game card"><div class="status">Sala: <b id="sala">---</b></div><h2 style="text-align:center">⚡ Clique!</h2><div id="tempo" class="status">⏱️ 30 segundos</div><div id="placar" class="score">0</div><button class="click" id="cliqueBtn">👆 CLIQUE!</button><div id="jogadores"></div><div id="resultado" class="status">Aguardando...</div></div>
+</section>
+<script>
+
+const PERFIL_KEY='VideosLegaisPerfil';
+function carregarPerfil(){try{return JSON.parse(localStorage.getItem(PERFIL_KEY)||'null')}catch(e){return null}}
+function aplicarPerfil(){const p=carregarPerfil();if(!p)return;const nome=p.nome, canal=p.canal;const x=document.getElementById('inicioNome');if(x)x.textContent=nome;const y=document.getElementById('inicioCanal');if(y)y.textContent=canal;const z=document.getElementById('meuCanalNome');if(z)z.textContent=canal;const c=document.getElementById('criadorNome');if(c)c.textContent=nome;const a=document.getElementById('meuAvatar');if(a)a.textContent=(canal||nome||'▶').charAt(0).toUpperCase();document.getElementById('perfilTela').style.display='none'}
+salvarPerfilBtn.onclick=()=>{const nome=nomeUsuario.value.trim(),canal=nomeCanal.value.trim();if(!nome||!canal){perfilAviso.textContent='⚠️ Preencha seu nome e o nome do canal.';return}localStorage.setItem(PERFIL_KEY,JSON.stringify({nome,canal}));aplicarPerfil()};
+function showPage(p){document.querySelectorAll('section').forEach(s=>s.style.display='none');document.getElementById(p).style.display='block';document.querySelectorAll('nav button').forEach(b=>b.classList.remove('ativo'));const nav=document.getElementById(p+'Btn');if(nav)nav.classList.add('ativo');window.scrollTo(0,0);if(p==='canal')carregarCanal()}
+inicioBtn.onclick=()=>showPage('inicio');videosBtn.onclick=()=>showPage('videos');jogosBtn.onclick=()=>showPage('jogos');canalBtn.onclick=()=>showPage('canal');irVideos.onclick=()=>showPage('videos');irJogos.onclick=()=>showPage('jogos');voltarInicio.onclick=()=>showPage('inicio');voltarVideos.onclick=()=>showPage('videos');
+
+let db;
+const DB_NAME='VideosLegaisDB', DB_VERSION=1, STORE='posts';
+const reqDB=indexedDB.open(DB_NAME,DB_VERSION);
+reqDB.onupgradeneeded=e=>{db=e.target.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
+reqDB.onsuccess=e=>{db=e.target.result;carregarPosts()};
+reqDB.onerror=()=>{statusPost.textContent='Não foi possível ativar o salvamento neste navegador.'};
+function salvarPost(post){return new Promise((resolve,reject)=>{let tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).add(post);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+function listarPosts(){return new Promise((resolve,reject)=>{let tx=db.transaction(STORE,'readonly'),r=tx.objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function carregarPosts(){if(!db)return;try{const posts=await listarPosts();meuVideo.innerHTML='';posts.forEach(mostrarPost);await carregarCanal()}catch(e){statusPost.textContent='Erro ao carregar seus vídeos.'}}
+async function carregarCanal(){if(!db)return;try{const posts=await listarPosts();videosDoCanal.innerHTML='';if(!posts.length){videosDoCanal.innerHTML='<div class="status">📭 Você ainda não postou nenhum vídeo.</div>';return}posts.slice().reverse().forEach(mostrarVideoNoCanal)}catch(e){videosDoCanal.innerHTML='<div class="status">Erro ao carregar o canal.</div>'}}
+function mostrarVideoNoCanal(post){const box=document.createElement('div');box.className='video';const v=document.createElement('video');v.controls=true;v.playsInline=true;v.src=URL.createObjectURL(post.arquivo);const t=document.createElement('p');t.textContent='📁 '+(post.titulo||post.nome);const d=document.createElement('div');d.className='likeCount';d.textContent='Publicado no seu canal';box.append(v,t,d);videosDoCanal.appendChild(box)}
+function mostrarPost(post){const box=document.createElement('div');box.className='video';const v=document.createElement('video');v.controls=true;v.playsInline=true;v.src=URL.createObjectURL(post.arquivo);const t=document.createElement('p');t.textContent='📁 '+(post.titulo||post.nome);const a=document.createElement('div');a.className='acoes';const b=document.createElement('button');b.className='likeBtn';b.dataset.like='post-'+post.id;b.innerHTML='👍 Curtir <span>0</span>';a.appendChild(b);box.appendChild(v);box.appendChild(t);box.appendChild(a);meuVideo.appendChild(box);prepararLike(b)}
+postarBtn.onclick=async()=>{const f=arquivo.files[0];if(!f){statusPost.textContent='Escolha um vídeo primeiro.';return}if(!f.type.startsWith('video/')){statusPost.textContent='Escolha um arquivo de vídeo.';return}if(!db){statusPost.textContent='O salvamento ainda não ficou pronto. Tente novamente.';return}postarBtn.disabled=true;statusPost.textContent='Salvando vídeo...';try{await salvarPost({titulo:tituloVideo.value.trim()||f.name,nome:f.name,arquivo:f,criadoEm:Date.now()});tituloVideo.value='';arquivo.value='';statusPost.textContent='✅ Vídeo postado e salvo!';await carregarPosts()}catch(e){statusPost.textContent='❌ Não foi possível salvar. O vídeo pode ser grande demais para o armazenamento do navegador.'}finally{postarBtn.disabled=false}};
+const CHAVE_CURTIDAS='vl_curtidas_v1', CHAVE_INSCRITO='vl_inscrito_v1', CHAVE_INSCRITOS='vl_inscritos_v1';
+function pegarDados(chave, padrao){try{return JSON.parse(localStorage.getItem(chave))??padrao}catch(e){return padrao}}
+function salvarDados(chave, valor){try{localStorage.setItem(chave,JSON.stringify(valor))}catch(e){}}
+function atualizarCanal(){const inscrito=pegarDados(CHAVE_INSCRITO,false);const total=pegarDados(CHAVE_INSCRITOS,0);inscritosTexto.textContent=total+' inscrito'+(total===1?'':'s');inscreverBtn.textContent=inscrito?'✅ Inscrito':'🔔 Inscrever-se';inscreverBtn.classList.toggle('dark',inscrito)}
+function prepararLike(btn){const id=btn.dataset.like;const curtidas=pegarDados(CHAVE_CURTIDAS,{});const info=curtidas[id]||{total:0,eu:false};btn.querySelector('span').textContent=info.total;btn.classList.toggle('liked',info.eu);btn.textContent=info.eu?'❤️ Curtido ':'👍 Curtir ';const span=document.createElement('span');span.textContent=info.total;btn.appendChild(span);btn.onclick=()=>{const dados=pegarDados(CHAVE_CURTIDAS,{});const atual=dados[id]||{total:0,eu:false};if(atual.eu){atual.total=Math.max(0,atual.total-1);atual.eu=false}else{atual.total++;atual.eu=true}dados[id]=atual;salvarDados(CHAVE_CURTIDAS,dados);prepararLike(btn)}}
+function prepararTodosLikes(){document.querySelectorAll('.likeBtn').forEach(prepararLike)}
+inscreverBtn.onclick=()=>{const inscrito=pegarDados(CHAVE_INSCRITO,false);const total=pegarDados(CHAVE_INSCRITOS,0);salvarDados(CHAVE_INSCRITO,!inscrito);salvarDados(CHAVE_INSCRITOS,Math.max(0,total+(inscrito?-1:1)));atualizarCanal()};
+prepararTodosLikes();atualizarCanal();
+const perfilSalvo=carregarPerfil();if(perfilSalvo){nomeUsuario.value=perfilSalvo.nome;nomeCanal.value=perfilSalvo.canal;aplicarPerfil()}
+
+criarBtn.onclick=()=>{menuJogo.style.display='none';criar.style.display='block'};entrarBtn.onclick=()=>{menuJogo.style.display='none';entrar.style.display='block'};voltarJogo1.onclick=()=>{criar.style.display='none';menuJogo.style.display='block'};voltarJogo2.onclick=()=>{entrar.style.display='none';menuJogo.style.display='block'};
+let pontos=0,jogando=false,timer=null;function iniciar(){pontos=0;jogando=true;let t=30;placar.textContent=0;tempo.textContent='⏱️ '+t+' segundos';resultado.textContent='🔥 Valendo!';clearInterval(timer);timer=setInterval(()=>{t--;tempo.textContent='⏱️ '+t+' segundos';if(t<=0){clearInterval(timer);jogando=false;resultado.textContent='🏁 Fim! Você fez '+pontos+' pontos.'}},1000)}
+criarSalaBtn.onclick=()=>{criar.style.display='none';partida.style.display='block';sala.textContent=Math.random().toString(36).slice(2,8).toUpperCase();iniciar()};entrarSalaBtn.onclick=()=>{entrar.style.display='none';partida.style.display='block';sala.textContent=codigo.value.toUpperCase()||'TESTE';iniciar()};cliqueBtn.onclick=()=>{if(jogando){pontos++;placar.textContent=pontos;jogadores.innerHTML='<div class="player">🧑 Você: '+pontos+' pontos</div>'}};
+</script>
+</body></html>
   
-body{  
-  margin:0;  
-  font-family:Arial,sans-serif;  
-  background:#151515;  
-  color:#fff;  
-}  
-  
-header{  
-  background:#ff7a00;  
-  padding:18px 12px;  
-  text-align:center;  
-}  
-  
-.logo{  
-  font-size:30px;  
-  font-weight:bold;  
-}  
-  
-.logo span{  
-  color:#6a00ff;  
-}  
-  
-nav{  
-  display:flex;  
-  gap:8px;  
-  padding:10px;  
-  background:#222;  
-}  
-  
-nav button{  
-  flex:1;  
-  padding:13px 5px;  
-  border:0;  
-  border-radius:10px;  
-  background:#333;  
-  color:#fff;  
-  font-weight:bold;  
-}  
-  
-nav button.active{  
-  background:#ff7a00;  
-}  
-  
-.page{  
-  display:none;  
-  padding:15px;  
-  max-width:750px;  
-  margin:auto;  
-}  
-  
-.page.active{  
-  display:block;  
-}  
-  
-.card{  
-  background:#242424;  
-  border-radius:16px;  
-  padding:18px;  
-  margin:14px 0;  
-}  
-  
-button{  
-  cursor:pointer;  
-}  
-  
-.mainBtn{  
-  width:100%;  
-  padding:15px;  
-  margin:7px 0;  
-  border:0;  
-  border-radius:12px;  
-  background:#ff7a00;  
-  color:#fff;  
-  font-size:18px;  
-  font-weight:bold;  
-}  
-  
-.secondary{  
-  background:#444;  
-}  
-  
-input{  
-  width:100%;  
-  padding:14px;  
-  margin:6px 0;  
-  border:0;  
-  border-radius:10px;  
-  font-size:17px;  
-}  
-  
-.videoBox{  
-  background:#242424;  
-  border-radius:15px;  
-  overflow:hidden;  
-  margin:15px 0;  
-}  
-  
-.videoBox video{  
-  width:100%;  
-  display:block;  
-  background:#000;  
-}  
-  
-.videoInfo{  
-  padding:12px;  
-}  
-  
-.game{  
-  display:none;  
-}  
-  
-.points{  
-  font-size:42px;  
-  font-weight:bold;  
-  text-align:center;  
-  margin:20px;  
-}  
-  
-.click{  
-  width:100%;  
-  height:140px;  
-  border:0;  
-  border-radius:18px;  
-  background:#00c853;  
-  color:#fff;  
-  font-size:30px;  
-  font-weight:bold;  
-}  
-  
-.player{  
-  background:#333;  
-  padding:10px;  
-  border-radius:9px;  
-  margin:6px;  
-}  
-  
-.roomCode{  
-  font-size:20px;  
-  word-break:break-all;  
-  text-align:center;  
-  padding:10px;  
-}  
-  
-.small{  
-  color:#aaa;  
-}  
-  
-#status{  
-  text-align:center;  
-  color:#ffb000;  
-  min-height:24px;  
-  margin: 10px 0;  
-}  
-</style>  </head>  <body>  <header>  
-  <div class="logo">▶ <span>Vídeos Legais</span></div>  
-</header>  <nav>  
-  <button id="homeBtn" class="active" onclick="showPage('home')">🏠 Início</button>  
-  <button id="videosBtn" onclick="showPage('videos')">😂 Vídeos</button>  
-  <button id="gamesBtn" onclick="showPage('jogos')">🎮 Jogos</button>  
-</nav>  <!-- INÍCIO -->  <section id="home" class="page active">  
-  <div class="card">  
-    <h1>😂 Bem-vindo ao Vídeos Legais!</h1>  
-    <p>Vídeos engraçados, jogos e diversão em um só lugar.</p>  
-    <button class="mainBtn" onclick="showPage('videos')">😂 Ver vídeos</button>  
-    <button class="mainBtn" onclick="showPage('jogos')">🎮 Jogar</button>  
-  </div>  
-  <div class="card">  
-    <h2>🔥 Destaques</h2>  
-    <p>Escolha vídeos do celular ou assista aos memes que separamos para você.</p>  
-  </div>  
-</section>  <!-- VÍDEOS -->  <section id="videos" class="page">  
-  <h1>😂 Vídeos Engraçados</h1>  
-  <div class="card">  
-    <h2>🎬 Adicionar seu próprio vídeo</h2>  
-    <p class="small">Escolha um vídeo salvo no seu celular para reproduzir aqui.</p>  
-    <input id="videoFile" type="file" accept="video/*">  
-  </div>    <!-- Lista onde os vídeos vão aparecer -->    <div id="listaVideos"></div>  
-</section>  <!-- JOGOS -->  <section id="jogos" class="page">  
-  <h1>🎮 Jogos</h1>    <div id="status"></div>    <div id="jogosMenu">  
-    <div class="card">  
-      <h2>👥 Jogo dos Amigos (Clicker Competitivo)</h2>  
-      <p>Crie uma sala ou entre na sala de um amigo.</p>  
-      <button class="mainBtn" onclick="abrirCriarSala()">🏠 Criar sala</button>  
-      <button class="mainBtn" onclick="abrirEntrarSala()">🔗 Entrar em sala</button>  
-    </div>  
-  </div>    <!-- CRIAR SALA -->    <div id="criarSala" class="game">  
-    <div class="card">  
-      <h2>🏠 Criar sala</h2>  
-      <input id="nameHost" placeholder="Seu nome" maxlength="16">  
-      <button class="mainBtn" onclick="createRoom()">Criar sala</button>  
-      <button class="mainBtn secondary" onclick="voltarJogos()">⬅️ Voltar</button>  
-    </div>  
-  </div>    <!-- ENTRAR -->    <div id="entrarSala" class="game">  
-    <div class="card">  
-      <h2>🔗 Entrar na sala</h2>  
-      <input id="nameJoin" placeholder="Seu nome" maxlength="16">  
-      <input id="roomInput" placeholder="Código da sala">  
-      <button class="mainBtn" onclick="joinRoom()">Entrar</button>  
-      <button class="mainBtn secondary" onclick="voltarJogos()">⬅️ Voltar</button>  
-    </div>  
-  </div>    <!-- JOGO ATIVO -->    <div id="gamePlay" class="game">  
-    <div class="card">  
-      <div class="roomCode">Código da Sala: <strong id="displayRoomId">...</strong></div>  
-      <div class="points" id="scoreDisplay">0</div>  
-      <button class="click" onclick="marcarPonto()">CLIQUE AQUI!</button>  
-      <div id="playersList" style="margin-top: 15px;"></div>  
-    </div>  
-  </div>  
-</section>  <script>  
-// --- VÍDEOS ENGRAÇADOS DE EXEMPLO (URLs públicas de memes conhecidos) ---  
-const videosProntos = [  
-  {  
-    titulo: "🐰 Animação Bunny",  
-    url: "https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"  
-  },  
-  {  
-    titulo: "🐘 Animação Elephants Dream",  
-    url: "https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4"  
-  },  
-  {  
-    titulo: "🐰 Coelhinho",  
-    url: "https://mdn.github.io/learning-area/html/multimedia-and-embedding/video-and-audio-content/rabbit320.mp4"  
-  }  
-];  
-  
-// --- LOGICA DE NAVEGAÇÃO ---  
-function showPage(pageId) {  
-  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));  
-  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));  
-    
-  const targetPage = document.getElementById(pageId);  
-  if(targetPage) targetPage.classList.add('active');  
-    
-  const activeBtn = document.getElementById(pageId + 'Btn');  
-  if(activeBtn) activeBtn.classList.add('active');  
-}  
-  
-// Carregar vídeos automáticos ao iniciar  
-function carregarVideosProntos() {  
-  const lista = document.getElementById('listaVideos');  
-  videosProntos.forEach(vid => {  
-    const box = document.createElement('div');  
-    box.className = 'videoBox';  
-    box.innerHTML = `  
-      <video src="${vid.url}" controls></video>  
-      <div class="videoInfo"><strong>${vid.titulo}</strong></div>  
-    `;  
-    lista.appendChild(box);  
-  });  
-}  
-  
-// Ouvinte para upload de vídeos locais  
-document.getElementById('videoFile').addEventListener('change', function(e) {  
-  const file = e.target.files[0];  
-  if (file) {  
-    const url = URL.createObjectURL(file);  
-    const lista = document.getElementById('listaVideos');  
-    const box = document.createElement('div');  
-    box.className = 'videoBox';  
-    box.innerHTML = `  
-      <video src="${url}" controls autoplay></video>  
-      <div class="videoInfo"><strong>📁 Seu vídeo: ${file.name}</strong></div>  
-    `;  
-    lista.insertBefore(box, lista.firstChild);  
-  }  
-});  
-  
-// --- LÓGICA DO JOGO (MENU E BOTÕES) ---  
-function abrirCriarSala() {  
-  document.getElementById('jogosMenu').style.display = 'none';  
-  document.getElementById('criarSala').style.display = 'block';  
-}  
-  
-function abrirEntrarSala() {  
-  document.getElementById('jogosMenu').style.display = 'none';  
-  document.getElementById('entrarSala').style.display = 'block';  
-}  
-  
-function voltarJogos() {  
-  document.getElementById('jogosMenu').style.display = 'block';  
-  document.getElementById('criarSala').style.display = 'none';  
-  document.getElementById('entrarSala').style.display = 'none';  
-  document.getElementById('gamePlay').style.display = 'none';  
-}  
-  
-// Iniciar funções estruturais básicas  
-carregarVideosProntos();  
-  
-// (Aqui você pode continuar a implementação do PeerJS para o multiplayer)  
-let peer;  
-function setStatus(txt) { document.getElementById('status').innerText = txt; }  
-</script>  </body>  
-</html>// ===============================
-// 🎮 MULTIPLAYER - JOGO DOS AMIGOS
-// ===============================
-
-let peer = null;
-let conexao = null;
-let souHost = false;
-let meuNome = "";
-let meuPontos = 0;
-let pontosRival = 0;
-let tempoRestante = 30;
-let intervalo = null;
-let jogoComecou = false;
-
-function setStatus(txt) {
-  document.getElementById('status').innerText = txt;
-}
-
-function gerarCodigo() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-// ===============================
-// 🏠 CRIAR SALA
-// ===============================
-
-function createRoom() {
-
-  meuNome = document.getElementById('nameHost').value.trim();
-
-  if (!meuNome) {
-    setStatus("Digite seu nome primeiro!");
-    return;
-  }
-
-  souHost = true;
-  meuPontos = 0;
-  pontosRival = 0;
-
-  const codigo = gerarCodigo();
-
-  setStatus("Criando sala...");
-
-  peer = new Peer(codigo);
-
-  peer.on('open', function(id) {
-
-    document.getElementById('displayRoomId').innerText = id;
-
-    document.getElementById('jogosMenu').style.display = 'none';
-    document.getElementById('criarSala').style.display = 'none';
-    document.getElementById('entrarSala').style.display = 'none';
-    document.getElementById('gamePlay').style.display = 'block';
-
-    atualizarPlacar();
-
-    setStatus("Sala criada! Mande o código para seu amigo.");
-
-  });
-
-  peer.on('connection', function(conn) {
-
-    conexao = conn;
-
-    conexao.on('open', function() {
-
-      conexao.send({
-        type: "nome",
-        nome: meuNome
-      });
-
-      setStatus("🎮 Amigo entrou! Começando o jogo...");
-
-      iniciarJogo();
-
-    });
-
-    receberDados();
-  });
-
-  peer.on('error', function(err) {
-    console.log(err);
-    setStatus("Erro ao criar a sala.");
-  });
-}
-
-
-// ===============================
-// 🔗 ENTRAR NA SALA
-// ===============================
-
-function joinRoom() {
-
-  meuNome = document.getElementById('nameJoin').value.trim();
-
-  const codigo = document.getElementById('roomInput').value.trim().toUpperCase();
-
-  if (!meuNome) {
-    setStatus("Digite seu nome primeiro!");
-    return;
-  }
-
-  if (!codigo) {
-    setStatus("Digite o código da sala!");
-    return;
-  }
-
-  souHost = false;
-
-  setStatus("Entrando na sala...");
-
-  peer = new Peer();
-
-  peer.on('open', function() {
-
-    conexao = peer.connect(codigo);
-
-    conexao.on('open', function() {
-
-      document.getElementById('displayRoomId').innerText = codigo;
-
-      document.getElementById('jogosMenu').style.display = 'none';
-      document.getElementById('criarSala').style.display = 'none';
-      document.getElementById('entrarSala').style.display = 'none';
-      document.getElementById('gamePlay').style.display = 'block';
-
-      conexao.send({
-        type: "nome",
-        nome: meuNome
-      });
-
-      atualizarPlacar();
-
-      setStatus("Conectado! Aguardando o início...");
-    });
-
-    receberDados();
-  });
-
-  peer.on('error', function(err) {
-    console.log(err);
-    setStatus("Não foi possível entrar na sala.");
-  });
-}
-
-
-// ===============================
-// 📡 RECEBER DADOS
-// ===============================
-
-function receberDados() {
-
-  if (!conexao) return;
-
-  conexao.on('data', function(data) {
-
-    if (data.type === "nome") {
-
-      pontosRival = 0;
-
-      const lista = document.getElementById('playersList');
-
-      lista.innerHTML =
-        `<div class="player">👤 ${meuNome}: <strong id="meuPlacar">0</strong></div>
-         <div class="player">👤 ${data.nome}: <strong id="rivalPlacar">0</strong></div>`;
-
-    }
-
-    if (data.type === "inicio") {
-
-      tempoRestante = data.tempo;
-      jogoComecou = true;
-
-      iniciarContagem();
-
-      setStatus("🔥 VALENDO!");
-
-    }
-
-    if (data.type === "ponto") {
-
-      pontosRival = data.pontos;
-
-      atualizarPlacar();
-    }
-
-    if (data.type === "fim") {
-
-      finalizarJogo(data);
-
-    }
-
-    if (data.type === "reiniciar") {
-
-      meuPontos = 0;
-      pontosRival = 0;
-      tempoRestante = 30;
-
-      atualizarPlacar();
-
-      iniciarContagem();
-
-    }
-
-  });
-}
-
-
-// ===============================
-// ⏱️ INICIAR JOGO
-// ===============================
-
-function iniciarJogo() {
-
-  if (!souHost) return;
-
-  meuPontos = 0;
-  pontosRival = 0;
-  tempoRestante = 30;
-
-  jogoComecou = true;
-
-  if (conexao) {
-
-    conexao.send({
-      type: "inicio",
-      tempo: 30
-    });
-
-  }
-
-  iniciarContagem();
-  atualizarPlacar();
-}
-
-
-// ===============================
-// ⏰ CONTAGEM REGRESSIVA
-// ===============================
-
-function iniciarContagem() {
-
-  clearInterval(intervalo);
-
-  tempoRestante = 30;
-
-  setStatus("⏱️ Tempo: 30 segundos");
-
-  intervalo = setInterval(function() {
-
-    tempoRestante--;
-
-    setStatus("⏱️ Tempo: " + tempoRestante + " segundos");
-
-    if (tempoRestante <= 0) {
-
-      clearInterval(intervalo);
-
-      jogoComecou = false;
-
-      terminarJogo();
-
-    }
-
-  }, 1000);
-}
-
-
-// ===============================
-// 👆 MARCAR PONTO
-// ===============================
-
-function marcarPonto() {
-
-  if (!jogoComecou) {
-    setStatus("⏳ O jogo ainda não começou!");
-    return;
-  }
-
-  meuPontos++;
-
-  atualizarPlacar();
-
-  if (conexao) {
-
-    conexao.send({
-      type: "ponto",
-      pontos: meuPontos
-    });
-
-  }
-}
-
-
-// ===============================
-// 📊 ATUALIZAR PLACAR
-// ===============================
-
-function atualizarPlacar() {
-
-  document.getElementById('scoreDisplay').innerText = meuPontos;
-
-  const meu = document.getElementById('meuPlacar');
-  const rival = document.getElementById('rivalPlacar');
-
-  if (meu) meu.innerText = meuPontos;
-  if (rival) rival.innerText = pontosRival;
-}
-
-
-// ===============================
-// 🏁 TERMINAR JOGO
-// ===============================
-
-function terminarJogo() {
-
-  jogoComecou = false;
-
-  if (conexao) {
-
-    conexao.send({
-      type: "fim",
-      meuScore: meuPontos
-    });
-
-  }
-
-  mostrarResultado();
-}
-
-
-// ===============================
-// 🏆 RESULTADO
-// ===============================
-
-function finalizarJogo(data) {
-
-  clearInterval(intervalo);
-
-  pontosRival = data.meuScore;
-
-  jogoComecou = false;
-
-  atualizarPlacar();
-
-  mostrarResultado();
-}
-
-
-function mostrarResultado() {
-
-  let resultado = "";
-
-  if (meuPontos > pontosRival) {
-
-    resultado = "🏆 VOCÊ VENCEU!";
-
-  } else if (meuPontos < pontosRival) {
-
-    resultado = "😅 SEU AMIGO VENCEU!";
-
-  } else {
-
-    resultado = "🤝 DEU EMPATE!";
-
-  }
-
-  setStatus(
-    resultado +
-    " | Você: " +
-    meuPontos +
-    " x " +
-    pontosRival
-  );
-
-  criarBotaoRevanche();
-}
-
-
-// ===============================
-// 🔄 JOGAR NOVAMENTE
-// ===============================
-
-function criarBotaoRevanche() {
-
-  if (document.getElementById('revancheBtn')) return;
-
-  const botao = document.createElement('button');
-
-  botao.id = "revancheBtn";
-  botao.className = "mainBtn";
-  botao.innerText = "🔄 Jogar novamente";
-
-  botao.onclick = function() {
-
-    botao.remove();
-
-    meuPontos = 0;
-    pontosRival = 0;
-
-    atualizarPlacar();
-
-    if (souHost) {
-
-      iniciarJogo();
-
-    } else {
-
-      setStatus("⏳ Aguardando o dono da sala...");
-
-    }
-
-  };
-
-  document
-    .getElementById('gamePlay')
-    .querySelector('.card')
-    .appendChild(botao);
-}
